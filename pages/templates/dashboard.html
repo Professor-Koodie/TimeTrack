@@ -1,0 +1,155 @@
+{% extends "home.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <h1>Dashboard</h1>
+    <p>Hello {{ user.username }}!</p>
+    <p>Welcome to your TimeTrack dashboard.</p>
+
+
+
+    <hr>
+
+    <!-- Search Icon Placeholder -->
+    <div style="margin: 20px 0;">
+        <h3>TimeTrack Tools</h3>
+        <button id="search-btn" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+            🔍 Search & Analyze Data
+        </button>
+        <p style="color: #666; font-size: 0.9em; margin-top: 5px;">(Excel reading and analysis tools coming soon)</p>
+    </div>
+
+    <!-- Dashboard Content Area -->
+    <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; background-color: #f9f9f9;">
+        <h4>Recent Activity</h4>
+        <p>Your time tracking data will appear here.</p>
+    </div>
+
+    <hr>
+
+    <h3>Update Employee Hours</h3>
+    {% if message %}
+        <div style="color: #a94442; background: #f2dede; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'dashboard' %}" style="margin-bottom: 30px; max-width: 480px;">
+        {% csrf_token %}
+        <label for="employee">Employee Name:</label><br>
+        <input type="text" name="employee" id="employee" value="{{ form.employee.value|default_if_none:'' }}" required style="width:100%; padding: 8px; margin-bottom: 10px;">
+
+        <label for="project_name">Project:</label><br>
+        {{ form.project_name }}<br><br>
+
+        <label for="hours_week">Hours per week:</label><br>
+        <input type="number" name="hours_week" id="hours_week" step="0.01" value="{{ form.hours_week.value|default_if_none:'' }}" required style="width:100%; padding: 8px; margin-bottom: 10px;">
+
+        <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer;">Save</button>
+    </form>
+
+    <form method="post" action="{% url 'logout' %}" style="display: inline; margin-bottom: 30px;">
+        {% csrf_token %}
+        <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Logout</button>
+    </form>
+
+    <hr>
+
+    <h3>Chart Viewer</h3>
+    <form method="get" action="{% url 'dashboard' %}" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; align-items: end;">
+        <div>
+            <label for="employee_filter">Employee:</label><br>
+            <select id="employee_filter" name="employee" style="width:100%; padding: 8px;">
+                <option value="all" {% if selected_employee == 'all' %}selected{% endif %}>All employees</option>
+                {% for employee in employee_choices|slice:'1:' %}
+                    <option value="{{ employee }}" {% if selected_employee == employee %}selected{% endif %}>{{ employee }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="start_month">Start month:</label><br>
+            <select id="start_month" name="start_month" style="width:100%; padding: 8px;">
+                {% for number, label in month_choices %}
+                    <option value="{{ number }}" {% if start_month == number %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="end_month">End month:</label><br>
+            <select id="end_month" name="end_month" style="width:100%; padding: 8px;">
+                {% for number, label in month_choices %}
+                    <option value="{{ number }}" {% if end_month == number %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer;">Apply</button>
+        </div>
+    </form>
+
+    <div style="width: 100%; max-width: 1200px; margin-bottom: 30px;">
+        <canvas id="projectChart"></canvas>
+    </div>
+
+    <hr>
+
+    <h3>Timesheet Table</h3>
+    <div style="overflow-x: auto;">
+        <table style="border-collapse: collapse; width: 100%; min-width: 1200px;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; background: #f8f9fa;">Employee</th>
+                    {% for week in week_headers %}
+                        <th style="border: 1px solid #ddd; padding: 8px; background: #f8f9fa;">W{{ week }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if table_data %}
+                    {% for employee, weeks in table_data.items %}
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold;">{{ employee }}</td>
+                            {% for hours in weeks %}
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ hours|default:'' }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="55" style="border: 1px solid #ddd; padding: 8px; text-align: center;">No timesheet data yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const chartData = {{ chart_data_json|safe }};
+        const config = {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hours'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        };
+        const ctx = document.getElementById('projectChart');
+        new Chart(ctx, config);
+    </script>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+/* Basic reset */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  color: #333;
+  text-align: center;
+  padding: 50px;
+}
+
+/* Heading */
+h1 {
+  color: #222;
+  margin-bottom: 20px;
+}
+
+/* Navigation links */
+a {
+  color: #0066cc;
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #004080;
+}
