@@ -13,16 +13,90 @@ h1 {
   color: #222;
   margin-bottom: 20px;
 }
+/* Navigation bar ribbon */
+nav {
+  display: flex;
+  justify-content: space-between; /* logo left, text right */
+  align-items: center;
+  padding: 10px 20px;
+  background-color: black;        /* black ribbon */
+}
 
-/* Navigation links */
-a {
-  color: #0066cc;
-  text-decoration: none;
-  margin: 0 10px;
+/* Right-side text and links grouped tightly */
+nav a, 
+nav span {
+  color: red;        /* red writings */
+  margin: 0;         /* remove spacing */
   font-weight: bold;
 }
 
-a:hover {
-  text-decoration: underline;
-  color: #004080;
+nav .right-links {
+  display: flex;
+  gap: 8px;          /* small controlled spacing between items */
+  align-items: center;
 }
+
+
+/* General form container */
+form {
+  background-color: #2c2c2c;       /* softer dark gray instead of pure black */
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 480px;
+  margin: 20px auto;
+  color: #e74c3c;                  /* muted red for headings/labels */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Labels */
+form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #e74c3c;                  /* softer red */
+}
+
+/* Inputs & selects */
+form input[type="text"],
+form input[type="password"],
+form input[type="number"],
+form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #e74c3c;       /* muted red border */
+  border-radius: 6px;
+  background-color: #f5f5f5;       /* light background for readability */
+  color: #222;                     /* black text inside fields */
+}
+
+/* Buttons */
+form button {
+  background-color: #e74c3c;       /* muted red */
+  color: #fff;                     /* white text for contrast */
+  font-weight: bold;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #c0392b;       /* darker red on hover */
+}
+
+/* Error / message box */
+form + div,
+div[style*="background: #f2dede"] {
+  background-color: #fbeaea;       /* soft pink background */
+  color: #c0392b;                  /* darker red text */
+  border: 1px solid #e74c3c;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+
+
+
