@@ -6,6 +6,9 @@ PROJECT_CHOICES = [
     ('JHB_Bram', 'Johannesburg_Bram'),
     ('Western_Cape', 'Western_Cape'),
     ('Richards_Bay', 'Richards_Bay'), 
+    ('Cato_Ridge', 'Cato Ridge'), 
+    ('Vandyksdrift_Level_Crossing', 'Vandyksdrift Level Crossing'),
+    ('General_Admin', 'General Admin'),
 ]
 
 class NewTimesheetForm(forms.Form):
