@@ -48,8 +48,13 @@
               {{ form.project_name }}
             </div>
             <div class="mb-3">
+              <label for="task_description" class="form-label">Task Description</label>#adited 
+              {{ form.task_description }}
+            </div>  
+            <div class="mb-3">
               <label for="week_number" class="form-label">Week number (optional):</label>
               <input type="number" class="form-control" name="week_number" id="week_number" step="1" min="1" max="54" value="{{ form.week_number.value|default_if_none:'' }}">
+              <div class="form-text">You can enter the same week again for the same employee to track hours on a different project.</div>
             </div>
             <div class="mb-3">
               <label for="hours_week" class="form-label">Hours per week:</label>
@@ -112,6 +117,8 @@
             <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#chartModal">
               View Fullscreen Chart
             </button>
+            <button class="btn btn-info ms-3" onclick="openPieFullscreen()">View Pie Chart Fullscreen</button>
+            <a class="btn btn-secondary ms-3" href="{% url 'generate_report' %}">Download Report</a>
           </div>
         </div>
       </div>
@@ -181,9 +188,27 @@
   </div>
 </div>
 
+<!-- Bootstrap Modal for Fullscreen Pie Chart -->
+<div class="modal fade" id="pieModal" tabindex="-1" aria-labelledby="pieModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pieModalLabel">Hours by Task Description</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body bg-light d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <canvas id="pieChartFullscreen" style="width:80% !important; height:80% !important;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const chartData = {{ chart_data_json|safe }};
+  const pieChartDataRaw = {{ pie_chart_json|safe }};
+  const pieMetadata = pieChartDataRaw.metadata;
+  
   const config = {
     type: 'bar',
     data: chartData,
@@ -207,5 +232,57 @@
   // Fullscreen chart in modal
   const ctxFull = document.getElementById('projectChartFullscreen');
   new Chart(ctxFull, config);
+
+  // Pie Chart
+  function openPieFullscreen() {
+    const modal = new bootstrap.Modal(document.getElementById('pieModal'));
+    modal.show();
+
+    setTimeout(() => {
+      const ctxPie = document.getElementById('pieChartFullscreen');
+      if (ctxPie) {
+        new Chart(ctxPie, {
+          type: 'doughnut',
+          data: {
+            labels: pieChartDataRaw.labels,
+            datasets: pieChartDataRaw.datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: {
+                  generateLabel: function(chart) {
+                    const dataset = chart.data.datasets[0];
+                    const labels = chart.data.labels;
+                    return labels.map((label, i) => {
+                      const meta = pieMetadata[label] || {};
+                      const project = meta.project || 'Unknown';
+                      return `${label} (${project})`;
+                    });
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.parsed || 0;
+                    const meta = pieMetadata[label] || {};
+                    const employees = (meta.employees && meta.employees.length > 0) 
+                      ? meta.employees.join(', ') 
+                      : 'No employees';
+                    return `${label}: ${value} hours\nEmployees: ${employees}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }, 100);
+  }
 </script>
 {% endblock %}
