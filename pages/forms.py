@@ -23,6 +23,10 @@ PROJECT_CHOICES = [
     ('Sedra_Edilon', 'Sedra Edilon'),
     ('Tsiko_LTA', 'Tsiko LTA'),  
     ('Iron_Ore', 'Iron Ore'),
+    ('RBM_Maintanance', 'RBM Maintanance'),
+    ('COTC', 'COTC'),
+    ('Bayvue_Rail_Yard', 'Bayvue Rail Yard'),  
+    ('MMSEZ', 'MMSEZ'), 
      
 ]
 Task_Description =[

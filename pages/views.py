@@ -45,6 +45,10 @@ PROJECT_DISPLAY_MAP = {
     'Sedra_Edilon': 'Sedra Edilon', 
     'Tsiko_LTA': 'Tsiko LTA',
     'Iron_Ore': 'Iron Ore',
+    'RBM_Maintanance': 'RBM Maintanance', 
+    'COTC': 'COTC', 
+    'Bayvue_Rail_Yard': 'Bayvue Rail Yard',  
+    'MMSEZ': "MMSEZ", 
 }
 
 #Hours planned per project
@@ -311,14 +315,33 @@ def generate_report(request):
     for task, hours in sorted(hours_by_task.items()):
         summary.append([task, float(f"{hours:.2f}")])
 
+    employee_monthly_summary = workbook.create_sheet(title='Employee Monthly Summary')
+    employee_monthly_summary.append(['Employee', *MONTH_NAMES, 'Total'])
+    employee_month_totals = {}
+    for e in entries:
+        employee = e.employee
+        month_name = MONTH_NAMES[week_number_to_month(e.week_number) - 1]
+        if employee not in employee_month_totals:
+            employee_month_totals[employee] = {'months': {month: 0.0 for month in MONTH_NAMES}, 'total': 0.0}
+        employee_month_totals[employee]['months'][month_name] += float(e.hours_week)
+        employee_month_totals[employee]['total'] += float(e.hours_week)
+    for employee in sorted(employee_month_totals):
+        month_values = employee_month_totals[employee]['months']
+        employee_monthly_summary.append([
+            employee,
+            *[float(f"{month_values[month]:.2f}") for month in MONTH_NAMES],
+            float(f"{employee_month_totals[employee]['total']:.2f}")
+        ])
+
     details = workbook.create_sheet(title='Entries')
-    details.append(['Employee', 'Project', 'Task Description', 'Week Number', 'Hours'])
+    details.append(['Employee', 'Project', 'Task Description', 'Week Number', 'Month', 'Hours'])
     for e in entries:
         details.append([
             e.employee,
             get_project_display(e.project_name),
             get_task_description_display(e.task_description),
             e.week_number,
+            MONTH_NAMES[week_number_to_month(e.week_number) - 1],
             float(e.hours_week)
         ])
 
